@@ -1,8 +1,8 @@
 import { Types } from 'mongoose';
 
 interface IMail {
-  from: Types.ObjectId;
-  to: Types.ObjectId;
+  from: string;
+  to: string;
   title: string;
   body: string;
 }
