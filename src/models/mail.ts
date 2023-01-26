@@ -1,5 +1,3 @@
-import { Types } from 'mongoose';
-
 interface IMail {
   from: string;
   to: string;

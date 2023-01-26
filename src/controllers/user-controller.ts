@@ -21,13 +21,8 @@ const getUsersByNamePart = async (partName: string) => {
   return foundedUsers;
 };
 
-const updateUsers = async (userNameFrom: string, userNameTo: string, mail: IMail) => {
-  await UserModel.updateMany(
-    {
-      $and: [{ name: userNameFrom }, { name: userNameTo }],
-    },
-    { $push: { mails: mail } },
-  );
+const updateUsers = async (fromUser: string, toUser: string, mail: IMail) => {
+  await UserModel.updateMany({ $or: [{ name: fromUser }, { name: toUser }] }, { $push: { mails: mail } });
 };
 
 export { getUser, getUsersName, getUsersByNamePart, updateUsers };
