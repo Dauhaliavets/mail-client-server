@@ -1,3 +1,5 @@
+import * as dotenv from 'dotenv';
+dotenv.config();
 import mongoose from 'mongoose';
 import express from 'express';
 import cors from 'cors';
@@ -5,9 +7,7 @@ import { createServer } from 'http';
 import { Server } from 'socket.io';
 import { getUser, getUsersByNamePart, updateUsers } from './controllers/user-controller';
 import { IMail } from './models/mail';
-
-const PORT = 4000;
-const URL = 'mongodb+srv://Task6:Task6@cluster0.aszmb7m.mongodb.net/?retryWrites=true&w=majority';
+import { ISocketUSer } from './models/socketUser';
 
 const app = express();
 app.use(cors());
@@ -22,15 +22,11 @@ const io = new Server(httpServer, {
 mongoose.set('strictQuery', false);
 
 mongoose
-  .connect(URL)
+  .connect(process.env.DB_URL as string)
   .then(() => console.log('Connected to MongoDB'))
   .catch((err) => console.log(`DB connection error: ${err}`));
 
-interface ISocketUser {
-  socketId: string;
-  userName: string;
-}
-let connectedUsers: ISocketUser[] = [];
+let connectedUsers: ISocketUSer[] = [];
 
 io.on('connection', (socket) => {
   socket.on('signIn', async ({ userName }) => {
@@ -44,15 +40,15 @@ io.on('connection', (socket) => {
     io.to(socket.id).emit('selectUserResponse', selectedUsers);
   });
 
-  socket.on('message', async ({ newMails }: { newMails: IMail }) => {
-    const { from: sender, to: recipient } = newMails;
-    await updateUsers(sender, recipient, newMails);
+  socket.on('message', async ({ newMail }: { newMail: IMail }) => {
+    const { from: sender, to: recipient } = newMail;
+    await updateUsers(sender, recipient, newMail);
 
-    const [senderSocketUser, recipientSocketUser] = connectedUsers.filter(
-      (user) => user.userName === sender || user.userName === recipient,
-    );
+    const foundSocketIds = connectedUsers
+      .filter((user) => user.userName === sender || user.userName === recipient)
+      .map((user) => user.socketId);
 
-    io.to([senderSocketUser.socketId, recipientSocketUser.socketId]).emit('messageResponse', newMails);
+    io.to([...foundSocketIds]).emit('messageResponse', newMail);
   });
 
   socket.on('disconnect', () => {
@@ -61,4 +57,4 @@ io.on('connection', (socket) => {
   });
 });
 
-httpServer.listen(PORT, () => console.log(`Server listen port - ${PORT}`));
+httpServer.listen(process.env.PORT, () => console.log(`Server listen port - ${process.env.PORT}`));
