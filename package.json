@@ -2,10 +2,11 @@
   "name": "anonymous-mail-client-server",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon ./src/server.ts"
+    "start": "node dist/server.js",
+    "dev": "nodemon ./src/server.ts",
+    "build": "tsc"
   },
   "keywords": [],
   "author": "",
